@@ -1,0 +1,4 @@
+/* pages/page2/index.wxss */
+view{
+  text-align: center;
+}
