@@ -16,7 +16,7 @@ class Controller {
     // 根据传入的字段更新页面
     update(payload, currentPage) {
         const updateImmediateState = {}
-        const updateAsyncState = new Map()
+        const updateAsyncStateMap = new Map()
 
         let tempSet
         new Promise ((resolve, reject) => {                                                                            // O(n²)
@@ -30,9 +30,9 @@ class Controller {
 
                 tempSet.forEach(page => {                                                                                           // collect data should be updated async
                     if(page != currentPage) {
-                        let state = updateAsyncState.get(page)      
+                        let state = updateAsyncStateMap.get(page)      
                         state ? (state[key] = value) : (state = { [key] : value })
-                        updateAsyncState.set(page, state)
+                        updateAsyncStateMap.set(page, state)
                     }
                 })
             }
@@ -42,10 +42,12 @@ class Controller {
         })
             .then(()=>{
                 const queue = []
-                updateAsyncState.forEach((data, page, map) => {
-                    page._isWatcher ? 
-                        queue.push(() => page.run()) :
-                        page.setData(data)
+                updateAsyncStateMap.forEach((data, page) => {
+                    queue.push(
+                        page._isWatcher? 
+                            ()=> page.run() :
+                            () => page.setData(data)
+                    )
                 })
                 return queue
             })
